@@ -6,12 +6,15 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.testing.jacoco.tasks.JacocoMerge
 import org.gradle.testing.jacoco.tasks.JacocoReport
+import org.slf4j.LoggerFactory
 
 class AndroidJavaReportMergerPlugin implements Plugin<Project> {
 
+    private static final LOGGER = LoggerFactory.getLogger(AndroidJavaReportMergerPlugin.class)
+
     void apply(Project project) {
         final NamedDomainObjectContainer<ClassFilter> classFilters = project.container(ClassFilter)
-        MergedReportConfigExtension mergedReportConfigExtension = project.extensions.create("mergedReportConfig", MergedReportConfigExtension, classFilters)
+        project.extensions.create("mergedReportConfig", MergedReportConfigExtension, classFilters)
 
         project.afterEvaluate {
 
@@ -52,8 +55,8 @@ class AndroidJavaReportMergerPlugin implements Plugin<Project> {
 
         MergedReportConfigExtension config = project.extensions.getByType(MergedReportConfigExtension)
 
-        println "${variant.name} includes: ${config.includesFor(variant)}"
-        println "${variant.name} excludes: ${config.excludesFor(variant)}"
+        LOGGER.debug("${variant.name} includes: ${config.includesFor(variant)}")
+        LOGGER.debug("${variant.name} excludes: ${config.excludesFor(variant)}")
 
         configureTask.executionData = project.files(mergedExecFileForVariant(project, variant))
         configureTask.classDirectories = project.fileTree(
