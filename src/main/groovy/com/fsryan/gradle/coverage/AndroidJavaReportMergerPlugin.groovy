@@ -64,8 +64,18 @@ class AndroidJavaReportMergerPlugin implements Plugin<Project> {
                 includes: config.includesFor(variant),
                 excludes: config.excludesFor(variant)
         )
+        configureTask.reports {
+            xml.enabled = true
+            html.enabled = true
+            csv.enabled = false
+        }
 
-       configureTask.sourceDirectories = variant.javaCompile.source
+        List<File> sourceDirectories = new ArrayList<>()
+        variant.sourceSets.each { ss ->
+            sourceDirectories.addAll(ss.javaDirectories)
+        }
+        LOGGER.debug("${variant.name} source directories: ${sourceDirectories}")
+        configureTask.sourceDirectories = project.files(sourceDirectories)
 
         return configureTask
     }
