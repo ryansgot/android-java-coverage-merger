@@ -1,0 +1,89 @@
+plugins {
+    id "com.jfrog.bintray" version "1.7.3"
+    id 'ch.netzwerg.release' version '1.2.4'
+}
+
+apply plugin: 'groovy'
+apply plugin: 'maven'
+apply plugin: 'maven-publish'
+
+group 'com.fsryan.gradle.coverage'
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    compile gradleApi()
+    compile localGroovy()
+
+    testCompile 'junit:junit:4.12'
+}
+
+bintray {
+    user = project.hasProperty('bintrayUser') ? project.getProperty('bintrayUser') : ''
+    key = project.hasProperty('bintrayApiKey') ? project.getProperty('bintrayApiKey') : ''
+    publications = ['smcPluginPublication']
+    pkg {
+        repo = 'maven'
+        name = 'android-java-coverage-merger'
+        licenses = ['MPL-2.0']
+        vcsUrl = 'https://github.com/ryansgot/android-java-coverage-merger'
+        version {
+            name = project.version
+            released  = new Date()
+            vcsTag = "v$project.version"
+        }
+    }
+}
+
+def pomConfig = {
+    licenses {
+        license {
+            name "Mozilla Public License Version 2.0"
+            url "https://www.mozilla.org/en-US/MPL/2.0/"
+            distribution "repo"
+        }
+    }
+    developers {
+        developer {
+            id "ryansgot"
+            name "Ryan"
+            email "fsryan.developer@gmail.com"
+        }
+    }
+}
+
+publishing {
+    publications {
+        smcPluginPublication(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+            groupId 'com.fsryan.gradle.coverage'
+            artifactId 'android-java-coverage-merger'
+            version project.version
+            pom.withXml {
+                def root = asNode()
+                root.appendNode('description', 'Gradle plugin providing tasks for generating combined android and java coverage reports')
+                root.appendNode('name', 'android-java-coverage-merger')
+                root.appendNode('url', 'https://github.com/ryansgot/android-java-coverage-merger')
+                root.children().last() + pomConfig
+            }
+        }
+    }
+}
+
+release {
+    dependsOn 'bintrayUpload'
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.groovy.srcDirs
+    classifier = 'sources'
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
