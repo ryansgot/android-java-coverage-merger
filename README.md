@@ -1,6 +1,8 @@
 # android-java-coverage-merger
 Gradle plugin for adding tasks that merge jacoco execution data for tests running on the Android device and on the local JVM
 
+[ ![Download](https://api.bintray.com/packages/ryansgot/maven/android-java-coverage-merger/images/download.svg) ](https://bintray.com/ryansgot/maven/android-java-coverage-merger/_latestVersion)
+
 ## What problem does this solve?
 To adequately test an Android application, one must usually run tests both on the DVM (on an Android device) and on a
 JVM. Without an external tool such as this one, you would get separate reports for both kinds of tests. This plugin
@@ -58,4 +60,12 @@ mergedReportConfig {
         }
     }
 }
+```
+Finally, in order to to a combined run of local JVM and connected android testing that generates the merged report for the free debug variant,
+```
+$ ./gradlew clean createMergedFreeDebugReport
+```
+And the same for the paid debug variant"
+```
+$ ./gradlew clean createMergedPaidDebugReport
 ```

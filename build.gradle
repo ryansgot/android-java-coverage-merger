@@ -23,7 +23,7 @@ dependencies {
 bintray {
     user = project.hasProperty('bintrayUser') ? project.getProperty('bintrayUser') : ''
     key = project.hasProperty('bintrayApiKey') ? project.getProperty('bintrayApiKey') : ''
-    publications = ['smcPluginPublication']
+    publications = ['pluginPublication']
     pkg {
         repo = 'maven'
         name = 'android-java-coverage-merger'
@@ -56,7 +56,7 @@ def pomConfig = {
 
 publishing {
     publications {
-        smcPluginPublication(MavenPublication) {
+        pluginPublication(MavenPublication) {
             from components.java
             artifact sourcesJar
             artifact javadocJar
