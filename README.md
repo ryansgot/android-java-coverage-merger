@@ -15,12 +15,33 @@ dependencies are created such that you must only run one gradle task in order to
 the merged report.
 
 ## Sample
+Add the following config to your projects base build.gradle
+```groovy
+buildscript {
+    repositories {
+        jcenter()   // <-- plugin available on jcenter
+    }
+    classpath {
+        classpath 'com.android.tools.build:gradle:2.3.1'
+        classpath 'com.fsryan.gradle.coverage:android-java-coverage-merger:x.y.z'
+    }
+}
+```
+You must first apply the jacoco plugin in any (sub)project for which you want to create combined reports.
+```groovy
+apply plugin: 'com.android.application' // or com.android.library
+apply plugin: 'jacoco'
+apply plugin: 'android-java-coverage-merger'
+
+```
 With the below in your build.gradle, you'll receive the following tasks:
 - createMergedFreeDebugReport - the task you should run when you want to test the free debug variant
 - mergeFreeDebugReport - the merging task for the free debug variant
 - createMergedPaidDebugReport - the task you should run when you want to test the paid debug variant
 - mergePaidDebugReport - the merging task for the paid debug variant
 - createMergedReports - the task you should run when you want to test all variants
+
+(Note that if your project does not have flavors, then the above tasks will be generated without the flavors) 
 ```groovy
 
 android {
@@ -37,8 +58,7 @@ android {
     }
 }
 ```
-In order to filter the classes on which Jacoco reports in the merged report, you can also filter by build type and/or
-product flavor
+In order to filter the classes on which Jacoco reports in the merged report, you can also filter by build type and/or product flavor.
 ```groovy
 mergedReportConfig {
     classFilters {
@@ -61,6 +81,8 @@ mergedReportConfig {
     }
 }
 ```
+Note that the sources included in each report will be the same as the sources for the variant. Therefore, if you have different sources for the free and paid flavors, then make sure to run the appropriate test task.
+
 Finally, in order to to a combined run of local JVM and connected android testing that generates the merged report for the free debug variant,
 ```
 $ ./gradlew clean createMergedFreeDebugReport
