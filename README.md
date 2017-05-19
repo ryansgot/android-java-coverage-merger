@@ -19,6 +19,7 @@ Add the following config to your projects base build.gradle
 ```groovy
 buildscript {
     repositories {
+        jcenter()
         maven {
             url  "http://dl.bintray.com/ryansgot/maven"
         }
