@@ -19,7 +19,9 @@ Add the following config to your projects base build.gradle
 ```groovy
 buildscript {
     repositories {
-        jcenter()   // <-- plugin available on jcenter
+        maven {
+            url  "http://dl.bintray.com/ryansgot/maven"
+        }
     }
     classpath {
         classpath 'com.android.tools.build:gradle:2.3.1'
