@@ -23,12 +23,15 @@ class AndroidJavaReportMergerPlugin implements Plugin<Project> {
             def variants = project.plugins.hasPlugin("com.android.application") ? project.android.applicationVariants : project.android.libraryVariants 
 
             variants.each { variant ->
+                def mergeTask
+                def configureTask
                 if (variant.buildType.testCoverageEnabled) {
-                    def mergeTask = mergeTaskForVariant(project, variant)
-                    def configureTask = configureTaskForVariant(project, variant)
+                    mergeTask = mergeTaskForVariant(project, variant)
+                    configureTask = configureTaskForVariant(project, variant)
                     configureTask.dependsOn(mergeTask)
                     mergedTestReportsTask.dependsOn(configureTask)
                 }
+
             }
         }
     }
@@ -64,6 +67,13 @@ class AndroidJavaReportMergerPlugin implements Plugin<Project> {
                 includes: config.includesFor(variant),
                 excludes: config.excludesFor(variant)
         )
+        if (isKotlin(project)) {
+            configureTask.classDirectories += project.fileTree(
+                    dir: project.tasks.findByName("compile${variant.name.capitalize()}Kotlin").destinationDir,
+                    includes: config.includesFor(variant),
+                    excludes: config.excludesFor(variant)
+            )
+        }
         configureTask.reports {
             xml.enabled = true
             html.enabled = true
@@ -89,5 +99,9 @@ class AndroidJavaReportMergerPlugin implements Plugin<Project> {
             return new File(project.buildDir.absolutePath + File.separator + 'jacoco' + File.separator + variant.buildType.name + File.separator + 'jacoco_merged.exec')
         }
         return new File(project.buildDir.absolutePath + File.separator + 'jacoco' + File.separator + variant.flavorName + File.separator + variant.buildType.name + File.separator + 'jacoco_merged.exec')
+    }
+
+    private static boolean isKotlin(Project project) {
+        return project.plugins.findPlugin('kotlin-android') != null
     }
 }

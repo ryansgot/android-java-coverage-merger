@@ -11,7 +11,7 @@ class MergedReportConfigExtension {
     NamedDomainObjectContainer<ClassFilter> classFilters
 
     MergedReportConfigExtension(NamedDomainObjectContainer<ClassFilter> classFilters) {
-        this.classFilters = classFilters;
+        this.classFilters = classFilters
     }
 
     def classFilters(final Closure configureClosure) {
