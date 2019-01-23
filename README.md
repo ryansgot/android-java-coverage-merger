@@ -25,26 +25,39 @@ buildscript {
         }
     }
     classpath {
-        classpath 'com.android.tools.build:gradle:2.3.1'
+        classpath 'com.android.tools.build:gradle:3.3.0'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.11"
         classpath 'com.fsryan.gradle.coverage:android-java-coverage-merger:x.y.z'
     }
 }
 ```
-You must first apply the jacoco plugin in any (sub)project for which you want to create combined reports.
+You must first apply the jacoco plugin (and optionally the kotlin-android plugin) in any (sub)project for which you want to create combined reports.
 ```groovy
 apply plugin: 'com.android.application' // or com.android.library
 apply plugin: 'jacoco'
+apply plugin: 'kotlin-android'
 apply plugin: 'android-java-coverage-merger'
+
+// The actual version you use will depend upon your version of the android
+// gradle plugin. Some versions of the android gradle plugin specify a
+// jacoco version that generates incompatible execution data.  
+jacoco {
+    toolVersion '0.8.2' // if using kotlin
+}
 
 ```
 With the below in your build.gradle, you'll receive the following tasks:
 - createMergedFreeDebugReport - the task you should run when you want to test the free debug variant
 - mergeFreeDebugReport - the merging task for the free debug variant
+- jacocoMergedFreeDebugJvmReport - the JVM-only jacoco report for the freeDebug variant--uses the class filters you have configured
+- jacocoMergedFreeReleaseJvmReport - the JVM-only jacoco report for the freeRelease variant--uses the class filters you have configured
 - createMergedPaidDebugReport - the task you should run when you want to test the paid debug variant
 - mergePaidDebugReport - the merging task for the paid debug variant
+- jacocoMergedPaidDebugJvmReport - the JVM-only jacoco report for the paidDebug variant--uses the class filters you have configured
+- jacocoMergedPaidReleaseJvmReport - the JVM-only jacoco report for the paidRelease variant--uses the class filters you have configured
 - createMergedReports - the task you should run when you want to test all variants
 
-(Note that if your project does not have flavors, then the above tasks will be generated without the flavors) 
+(Note that if your project does not have flavors, then the above tasks will be generated with build types only) 
 ```groovy
 
 android {
@@ -94,3 +107,13 @@ And the same for the paid debug variant"
 ```
 $ ./gradlew clean createMergedPaidDebugReport
 ```
+
+# Releases
+
+## 0.0.1: Kotlin Support
+* Kotlin support (I recommend JaCoCo version 0.8.2 or higher (which I've tested to work with android gradle plugin 3.3.0))
+* Creation of JVM-only JaCoCo report tasks for gradle (see above)
+* When you run a `createMerged<variant name>Report` task, HTML and XML for the local JVM report will be included in the output as well.
+
+## 0.0.0: First release
+I used this release myself for a long time, as it worked for my use case (no Kotlin). It works well enough supporting Java code, but it did not provide a built-in JVM-only JaCoCo Report task.
