@@ -23,23 +23,23 @@ class AndroidJavaReportMergerPlugin implements Plugin<Project> {
             def variants = project.plugins.hasPlugin("com.android.application") ? project.android.applicationVariants : project.android.libraryVariants 
 
             variants.each { variant ->
+                def jvmReportTask = jvmReportTaskForVariant(project, variant)
                 def mergeTask
                 def configureTask
                 if (variant.buildType.testCoverageEnabled) {
-                    mergeTask = mergeTaskForVariant(project, variant)
+                    mergeTask = mergeTaskForVariant(project, jvmReportTask, variant)
                     configureTask = configureTaskForVariant(project, variant)
                     configureTask.dependsOn(mergeTask)
                     mergedTestReportsTask.dependsOn(configureTask)
                 }
-
             }
         }
     }
 
-    private static Task mergeTaskForVariant(Project project, variant) {
+    private static Task mergeTaskForVariant(Project project, Task jvmReportTask, variant) {
         Task mergeTask = project.tasks.create("merge${variant.name.capitalize()}Report", JacocoMerge)
         mergeTask.dependsOn("create${variant.name.capitalize()}CoverageReport")
-        mergeTask.dependsOn("test${variant.name.capitalize()}UnitTest")
+        mergeTask.dependsOn(jvmReportTask)
         mergeTask.group = 'Reporting'
         mergeTask.description = "merge android and java jacoco test reports for $variant.name variant"
         mergeTask.destinationFile = mergedExecFileForVariant(project, variant)
@@ -55,26 +55,41 @@ class AndroidJavaReportMergerPlugin implements Plugin<Project> {
         Task configureTask = project.tasks.create("createMerged${variant.name.capitalize()}Report", JacocoReport)
         configureTask.group = 'Reporting'
         configureTask.description = "merged jacoco for $variant.name variant"
+        setUpJacocoReportTaskWithoutExecutionData(project, (JacocoReport) configureTask, variant)
+        configureTask.executionData = project.files(mergedExecFileForVariant(project, variant))
+        return configureTask
+    }
 
+    private static Task jvmReportTaskForVariant(Project project, variant) {
+        Task ret = project.tasks.create("jacoco${variant.name.capitalize()}JvmReport", JacocoReport)
+        Task unitTestTask = project.tasks.findByName("test${variant.name.capitalize()}UnitTest")
+        ret.dependsOn(unitTestTask)
+        ret.group = 'Reporting'
+        ret.description = "JVM jacoco report for $variant.name variant"
+        setUpJacocoReportTaskWithoutExecutionData(project, (JacocoReport) ret, variant)
+        ret.executionData = project.files(javaTestExecutionDataForVariant(project, variant))
+        return ret
+    }
+
+    private static void setUpJacocoReportTaskWithoutExecutionData(Project project, JacocoReport jacocoReportTask, variant) {
         MergedReportConfigExtension config = project.extensions.getByType(MergedReportConfigExtension)
 
         LOGGER.debug("${variant.name} includes: ${config.includesFor(variant)}")
         LOGGER.debug("${variant.name} excludes: ${config.excludesFor(variant)}")
 
-        configureTask.executionData = project.files(mergedExecFileForVariant(project, variant))
-        configureTask.classDirectories = project.fileTree(
+        jacocoReportTask.classDirectories = project.fileTree(
                 dir: project.tasks.findByName("compile${variant.name.capitalize()}JavaWithJavac").destinationDir,
                 includes: config.includesFor(variant),
                 excludes: config.excludesFor(variant)
         )
         if (isKotlin(project)) {
-            configureTask.classDirectories += project.fileTree(
+            jacocoReportTask.classDirectories += project.fileTree(
                     dir: project.tasks.findByName("compile${variant.name.capitalize()}Kotlin").destinationDir,
                     includes: config.includesFor(variant),
                     excludes: config.excludesFor(variant)
             )
         }
-        configureTask.reports {
+        jacocoReportTask.reports {
             xml.enabled = true
             html.enabled = true
             csv.enabled = false
@@ -85,9 +100,7 @@ class AndroidJavaReportMergerPlugin implements Plugin<Project> {
             sourceDirectories.addAll(ss.javaDirectories)
         }
         LOGGER.debug("${variant.name} source directories: ${sourceDirectories}")
-        configureTask.sourceDirectories = project.files(sourceDirectories)
-
-        return configureTask
+        jacocoReportTask.sourceDirectories = project.files(sourceDirectories)
     }
     
     private static File javaTestExecutionDataForVariant(Project project, variant) {
