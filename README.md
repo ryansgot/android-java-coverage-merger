@@ -49,12 +49,12 @@ jacoco {
 With the below in your build.gradle, you'll receive the following tasks:
 - createMergedFreeDebugReport - the task you should run when you want to test the free debug variant
 - mergeFreeDebugReport - the merging task for the free debug variant
-- jacocoMergedFreeDebugJvmReport - the JVM-only jacoco report for the freeDebug variant--uses the class filters you have configured
-- jacocoMergedFreeReleaseJvmReport - the JVM-only jacoco report for the freeRelease variant--uses the class filters you have configured
+- jacocoFreeDebugJvmReport - the JVM-only jacoco report for the freeDebug variant--uses the class filters you have configured
+- jacocoFreeReleaseJvmReport - the JVM-only jacoco report for the freeRelease variant--uses the class filters you have configured
 - createMergedPaidDebugReport - the task you should run when you want to test the paid debug variant
 - mergePaidDebugReport - the merging task for the paid debug variant
-- jacocoMergedPaidDebugJvmReport - the JVM-only jacoco report for the paidDebug variant--uses the class filters you have configured
-- jacocoMergedPaidReleaseJvmReport - the JVM-only jacoco report for the paidRelease variant--uses the class filters you have configured
+- jacocoPaidDebugJvmReport - the JVM-only jacoco report for the paidDebug variant--uses the class filters you have configured
+- jacocoPaidReleaseJvmReport - the JVM-only jacoco report for the paidRelease variant--uses the class filters you have configured
 - createMergedReports - the task you should run when you want to test all variants
 
 (Note that if your project does not have flavors, then the above tasks will be generated with build types only) 
