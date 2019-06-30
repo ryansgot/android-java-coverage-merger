@@ -14,6 +14,12 @@ appropriate merged reports from both the local java (JVM) and tests run on the d
 dependencies are created such that you must only run one gradle task in order to test on the JVM and DVM and generate
 the merged report.
 
+## Compatibility Concerns
+| Gradle Version  | android-java-coverage-merger version |
+| --------------- | ------------------------------------ |
+|     < 5.0       |               >= 0.0.1               |
+|     >= 5.0      |               >= 0.0.2               |
+
 ## Sample
 Add the following config to your projects base build.gradle
 ```groovy
@@ -42,7 +48,7 @@ apply plugin: 'android-java-coverage-merger'
 // gradle plugin. Some versions of the android gradle plugin specify a
 // jacoco version that generates incompatible execution data.  
 jacoco {
-    toolVersion '0.8.2' // if using kotlin
+    toolVersion '0.8.2' // or higher if using kotlin
 }
 
 ```
@@ -109,6 +115,9 @@ $ ./gradlew clean createMergedPaidDebugReport
 ```
 
 # Releases
+
+## 0.0.2: Gradle 5+ Support
+* Gradle 5.0 enforced that you use `additionalSourceDirs` and `additionalClassDirs` in an unfriendly way by throwing a `StackOverflowError` when you attempted to use the `sourceDirectories` and `classDirectories` setters.
 
 ## 0.0.1: Kotlin Support
 * Kotlin support (I recommend JaCoCo version 0.8.2 or higher (which I've tested to work with android gradle plugin 3.3.0))
