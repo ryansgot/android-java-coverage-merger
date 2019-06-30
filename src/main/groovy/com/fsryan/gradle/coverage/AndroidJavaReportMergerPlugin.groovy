@@ -77,18 +77,21 @@ class AndroidJavaReportMergerPlugin implements Plugin<Project> {
         LOGGER.debug("${variant.name} includes: ${config.includesFor(variant)}")
         LOGGER.debug("${variant.name} excludes: ${config.excludesFor(variant)}")
 
-        jacocoReportTask.classDirectories = project.fileTree(
+        def classDirectories = project.fileTree(
                 dir: project.tasks.findByName("compile${variant.name.capitalize()}JavaWithJavac").destinationDir,
                 includes: config.includesFor(variant),
                 excludes: config.excludesFor(variant)
         )
         if (isKotlin(project)) {
-            jacocoReportTask.classDirectories += project.fileTree(
+            classDirectories += project.fileTree(
                     dir: project.tasks.findByName("compile${variant.name.capitalize()}Kotlin").destinationDir,
                     includes: config.includesFor(variant),
                     excludes: config.excludesFor(variant)
             )
         }
+        LOGGER.debug("${variant.name} classDirs = $classDirectories")
+        jacocoReportTask.setAdditionalClassDirs(classDirectories)
+
         jacocoReportTask.reports {
             xml.enabled = true
             html.enabled = true
@@ -100,7 +103,7 @@ class AndroidJavaReportMergerPlugin implements Plugin<Project> {
             sourceDirectories.addAll(ss.javaDirectories)
         }
         LOGGER.debug("${variant.name} source directories: ${sourceDirectories}")
-        jacocoReportTask.sourceDirectories = project.files(sourceDirectories)
+        jacocoReportTask.setAdditionalSourceDirs(project.files(sourceDirectories))
     }
     
     private static File javaTestExecutionDataForVariant(Project project, variant) {
