@@ -1,6 +1,5 @@
 plugins {
-    id "com.jfrog.bintray" version "1.7.3"
-    id 'ch.netzwerg.release' version '1.2.4'
+    id "com.jfrog.bintray" version "1.8.5"
 }
 
 apply plugin: 'groovy'
@@ -8,6 +7,7 @@ apply plugin: 'maven'
 apply plugin: 'maven-publish'
 
 group 'com.fsryan.gradle.coverage'
+version '0.0.3'
 
 repositories {
     jcenter()
@@ -54,6 +54,16 @@ def pomConfig = {
     }
 }
 
+task sourcesJar(type: Jar) {
+    from sourceSets.main.groovy.srcDirs
+    classifier = 'sources'
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
 publishing {
     publications {
         pluginPublication(MavenPublication) {
@@ -74,16 +84,9 @@ publishing {
     }
 }
 
-release {
+task release {
     dependsOn 'bintrayUpload'
-}
-
-task sourcesJar(type: Jar) {
-    from sourceSets.main.groovy.srcDirs
-    classifier = 'sources'
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
+    doLast {
+        println "Huzzah! Uploaded $version to bintray"
+    }
 }

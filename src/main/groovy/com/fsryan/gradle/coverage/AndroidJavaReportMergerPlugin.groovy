@@ -43,7 +43,7 @@ class AndroidJavaReportMergerPlugin implements Plugin<Project> {
         mergeTask.group = 'Reporting'
         mergeTask.description = "merge android and java jacoco test reports for $variant.name variant"
         mergeTask.destinationFile = mergedExecFileForVariant(project, variant)
-        mergeTask.executionData = project.files(javaTestExecutionDataForVariant(project, variant))
+        mergeTask.executionData(project.files(javaTestExecutionDataForVariant(project, variant)))
         mergeTask.doFirst {
             List<String> androidExecFiles = new FileNameByRegexFinder().getFileNames(project.buildDir.absolutePath + File.separator + '', /.*\.ec/)
             executionData = executionData + project.files(androidExecFiles)
@@ -56,7 +56,7 @@ class AndroidJavaReportMergerPlugin implements Plugin<Project> {
         configureTask.group = 'Reporting'
         configureTask.description = "merged jacoco for $variant.name variant"
         setUpJacocoReportTaskWithoutExecutionData(project, (JacocoReport) configureTask, variant)
-        configureTask.executionData = project.files(mergedExecFileForVariant(project, variant))
+        configureTask.executionData(project.files(mergedExecFileForVariant(project, variant)))
         return configureTask
     }
 
@@ -67,7 +67,7 @@ class AndroidJavaReportMergerPlugin implements Plugin<Project> {
         ret.group = 'Reporting'
         ret.description = "JVM jacoco report for $variant.name variant"
         setUpJacocoReportTaskWithoutExecutionData(project, (JacocoReport) ret, variant)
-        ret.executionData = project.files(javaTestExecutionDataForVariant(project, variant))
+        ret.executionData(project.files(javaTestExecutionDataForVariant(project, variant)))
         return ret
     }
 
@@ -90,7 +90,7 @@ class AndroidJavaReportMergerPlugin implements Plugin<Project> {
             )
         }
         LOGGER.debug("${variant.name} classDirs = $classDirectories")
-        jacocoReportTask.setAdditionalClassDirs(classDirectories)
+        jacocoReportTask.additionalClassDirs(classDirectories)
 
         jacocoReportTask.reports {
             xml.enabled = true
@@ -103,7 +103,7 @@ class AndroidJavaReportMergerPlugin implements Plugin<Project> {
             sourceDirectories.addAll(ss.javaDirectories)
         }
         LOGGER.debug("${variant.name} source directories: ${sourceDirectories}")
-        jacocoReportTask.setAdditionalSourceDirs(project.files(sourceDirectories))
+        jacocoReportTask.additionalSourceDirs(project.files(sourceDirectories))
     }
     
     private static File javaTestExecutionDataForVariant(Project project, variant) {
