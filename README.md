@@ -117,6 +117,9 @@ $ ./gradlew clean createMergedPaidDebugReport
 
 # Releases
 
+## 0.0.3: Gradle 6+ Support
+* Gradle 6.0 backtracked on the way that you set `additionalSourceDirs` and `additionalClassDirs`, no longer allowing you to use the setters for them. Additioanlly, I had to change how execution files got added.
+
 ## 0.0.2: Gradle 5+ Support
 * Gradle 5.0 enforced that you use `additionalSourceDirs` and `additionalClassDirs` in an unfriendly way by throwing a `StackOverflowError` when you attempted to use the `sourceDirectories` and `classDirectories` setters.
 
