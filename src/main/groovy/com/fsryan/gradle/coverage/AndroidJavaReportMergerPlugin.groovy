@@ -4,6 +4,8 @@ import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.tasks.testing.Test
+import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
 import org.gradle.testing.jacoco.tasks.JacocoMerge
 import org.gradle.testing.jacoco.tasks.JacocoReport
 import org.slf4j.LoggerFactory
@@ -63,6 +65,9 @@ class AndroidJavaReportMergerPlugin implements Plugin<Project> {
     private static Task jvmReportTaskForVariant(Project project, variant) {
         Task ret = project.tasks.create("jacoco${variant.name.capitalize()}JvmReport", JacocoReport)
         Task unitTestTask = project.tasks.findByName("test${variant.name.capitalize()}UnitTest")
+        unitTestTask.jacoco {
+            destinationFile = project.file("${project.buildDir}/jacoco/test${variant.name.capitalize()}UnitTest.exec")
+        }
         ret.dependsOn(unitTestTask)
         ret.group = 'Reporting'
         ret.description = "JVM jacoco report for $variant.name variant"
@@ -83,11 +88,15 @@ class AndroidJavaReportMergerPlugin implements Plugin<Project> {
                 excludes: config.excludesFor(variant)
         )
         if (isKotlin(project)) {
-            classDirectories += project.fileTree(
-                    dir: project.tasks.findByName("compile${variant.name.capitalize()}Kotlin").destinationDir,
-                    includes: config.includesFor(variant),
-                    excludes: config.excludesFor(variant)
-            )
+            Task kotlinCompileTask = project.tasks.findByName("compile${variant.name.capitalize()}Kotlin")
+            if (kotlinCompileTask != null) {
+                def destinationDir = kotlinCompileTask.hasProperty("destinationDir") ? kotlinCompileTask.destinationDir : null
+                classDirectories += project.fileTree(
+                        dir: destinationDir,
+                        includes: config.includesFor(variant),
+                        excludes: config.excludesFor(variant)
+                )
+            }
         }
         LOGGER.debug("${variant.name} classDirs = $classDirectories")
         jacocoReportTask.additionalClassDirs(classDirectories)

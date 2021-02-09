@@ -7,7 +7,7 @@ apply plugin: 'maven'
 apply plugin: 'maven-publish'
 
 group 'com.fsryan.gradle.coverage'
-version '0.0.3'
+version '0.1.0'
 
 repositories {
     jcenter()
@@ -47,8 +47,8 @@ def pomConfig = {
     }
     developers {
         developer {
-            id "ryansgot"
-            name "Ryan"
+            id "fsryan.developer"
+            name "Ryan Scott"
             email "fsryan.developer@gmail.com"
         }
     }
