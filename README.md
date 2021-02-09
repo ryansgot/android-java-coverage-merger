@@ -19,7 +19,7 @@ the merged report.
 | --------------- | ------------------------------------ |
 |     < 5.0       |               >= 0.0.1               |
 |     >= 5.0      |               >= 0.0.2               |
-|     >= 6.0      |               >= 0.0.3               |
+|     >= 6.0      |               >= 0.1.0               |
 
 ## Sample
 Add the following config to your projects base build.gradle
@@ -116,6 +116,9 @@ $ ./gradlew clean createMergedPaidDebugReport
 ```
 
 # Releases
+
+## 0.1.0: Better Gradle 6+ Support
+* It seems some gradle version/jacoco version combos were not picking up the .exec file output. This version changes to specify the output file on a per-test-task basis. 
 
 ## 0.0.3: Gradle 6+ Support
 * Gradle 6.0 backtracked on the way that you set `additionalSourceDirs` and `additionalClassDirs`, no longer allowing you to use the setters for them. Additioanlly, I had to change how execution files got added.
