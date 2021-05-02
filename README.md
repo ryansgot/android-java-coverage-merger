@@ -26,15 +26,12 @@ Add the following config to your projects base build.gradle
 ```groovy
 buildscript {
     repositories {
-        jcenter()
-        maven {
-            url  "http://dl.bintray.com/ryansgot/maven"
-        }
+        mavenCentral()
     }
     classpath {
-        classpath 'com.android.tools.build:gradle:3.3.0'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.11"
-        classpath 'com.fsryan.gradle.coverage:android-java-coverage-merger:x.y.z'
+        classpath 'com.android.tools.build:gradle:4.1.2'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.31"
+        classpath 'com.fsryan.gradle.coverage:android-java-coverage-merger:0.1.0'
     }
 }
 ```
