@@ -1,16 +1,13 @@
-plugins {
-    id "com.jfrog.bintray" version "1.7.3"
-    id 'ch.netzwerg.release' version '1.2.4'
-}
-
 apply plugin: 'groovy'
 apply plugin: 'maven'
 apply plugin: 'maven-publish'
+apply plugin: 'signing'
 
 group 'com.fsryan.gradle.coverage'
+version '0.0.2'
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 dependencies {
@@ -18,64 +15,6 @@ dependencies {
     compile localGroovy()
 
     testCompile 'junit:junit:4.12'
-}
-
-bintray {
-    user = project.hasProperty('bintrayUser') ? project.getProperty('bintrayUser') : ''
-    key = project.hasProperty('bintrayApiKey') ? project.getProperty('bintrayApiKey') : ''
-    publications = ['pluginPublication']
-    pkg {
-        repo = 'maven'
-        name = 'android-java-coverage-merger'
-        licenses = ['MPL-2.0']
-        vcsUrl = 'https://github.com/ryansgot/android-java-coverage-merger'
-        version {
-            name = project.version
-            released  = new Date()
-            vcsTag = "v$project.version"
-        }
-    }
-}
-
-def pomConfig = {
-    licenses {
-        license {
-            name "Mozilla Public License Version 2.0"
-            url "https://www.mozilla.org/en-US/MPL/2.0/"
-            distribution "repo"
-        }
-    }
-    developers {
-        developer {
-            id "ryansgot"
-            name "Ryan"
-            email "fsryan.developer@gmail.com"
-        }
-    }
-}
-
-publishing {
-    publications {
-        pluginPublication(MavenPublication) {
-            from components.java
-            artifact sourcesJar
-            artifact javadocJar
-            groupId 'com.fsryan.gradle.coverage'
-            artifactId 'android-java-coverage-merger'
-            version project.version
-            pom.withXml {
-                def root = asNode()
-                root.appendNode('description', 'Gradle plugin providing tasks for generating combined android and java coverage reports')
-                root.appendNode('name', 'android-java-coverage-merger')
-                root.appendNode('url', 'https://github.com/ryansgot/android-java-coverage-merger')
-                root.children().last() + pomConfig
-            }
-        }
-    }
-}
-
-release {
-    dependsOn 'bintrayUpload'
 }
 
 task sourcesJar(type: Jar) {
@@ -86,4 +25,105 @@ task sourcesJar(type: Jar) {
 task javadocJar(type: Jar, dependsOn: javadoc) {
     classifier = 'javadoc'
     from javadoc.destinationDir
+}
+
+def siteUrl = 'https://github.com/ryansgot/android-java-coverage-merger'
+
+publishing {
+    repositories {
+        maven {
+            name 'releaseS3'
+            url 's3://repo.fsryan.com/release'
+            credentials(AwsCredentials) {
+                accessKey = project.hasProperty("awsMavenAccessKey") ? project.property("awsMavenAccessKey") : "${System.env.AWS_ACCES_KEY_ID}"
+                secretKey = project.hasProperty("awsMavenSecretKey") ? project.property("awsMavenSecretKey") : "${System.env.AWS_SECRET_KEY}"
+            }
+        }
+        maven {
+            name 'snapshotS3'
+            url 's3://repo.fsryan.com/snapshot'
+            credentials(AwsCredentials) {
+                accessKey = project.hasProperty("awsMavenAccessKey") ? project.property("awsMavenAccessKey") : "${System.env.AWS_ACCES_KEY_ID}"
+                secretKey = project.hasProperty("awsMavenSecretKey") ? project.property("awsMavenSecretKey") : "${System.env.AWS_SECRET_KEY}"
+            }
+        }
+        maven {
+            name = "releaseOSSRH"
+            url 'https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/'
+            credentials {
+                username =  project.findProperty("com.fsryan.ossrh.release.username") ?: ""
+                password =  project.findProperty("com.fsryan.ossrh.release.password") ?: ""
+            }
+        }
+        maven {
+            name = "snapshotOSSRH"
+            url 'https://s01.oss.sonatype.org/content/repositories/snapshots/'
+            credentials {
+                username =  project.findProperty("com.fsryan.ossrh.snapshot.username") ?: ""
+                password =  project.findProperty("com.fsryan.ossrh.snapshot.password") ?: ""
+            }
+        }
+    }
+    publications {
+        plugin(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+            groupId 'com.fsryan.gradle.coverage'
+            artifactId 'android-java-coverage-merger'
+            version project.version
+
+            pom {
+                licenses {
+                    license {
+                        name = "Mozilla Public License Version 2.0"
+                        url = "https://www.mozilla.org/en-US/MPL/2.0/"
+                        distribution = "repo"
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'fsryan'
+                        name = 'Ryan Scott'
+                        email = 'fsryan.developer@gmail.com'
+                    }
+                }
+                scm {
+                    connection = "${siteUrl}.git".toString()
+                    developerConnection = "${siteUrl}.git".toString()
+                    url = siteUrl
+                }
+                withXml {
+                    def root = asNode()
+                    root.appendNode('description', 'Gradle plugin providing tasks for generating combined android and java coverage reports')
+                    root.appendNode('name', 'android-java-coverage-merger')
+                    root.appendNode('url', 'https://github.com/ryansgot/android-java-coverage-merger')
+                    root.children().last()
+                }
+            }
+        }
+    }
+}
+
+signing {
+
+    if (project.hasProperty("signing.keyId")) {
+        if (project.hasProperty("signing.password")) {
+            if (project.hasProperty("signing.secretKeyRingFile")) {
+                sign(publishing.publications)
+            } else {
+                println("Missing signing.secretKeyRingFile: cannot sign ${project.name}")
+            }
+        } else {
+            println("Missing signing.password: cannot sign ${project.name}")
+        }
+    } else {
+        println("Missing signing.keyId: cannot sign ${project.name}")
+    }
+}
+
+afterEvaluate {
+    def releaseTask = project.task("release", dependsOn: ["publishPluginPublicationToReleaseOSSRHRepository", "publishPluginPublicationToReleaseS3Repository"])
+    releaseTask.description = "Release to OSSRH and S3"
+    releaseTask.group = "Publishing"
 }
