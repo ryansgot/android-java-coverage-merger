@@ -19,7 +19,7 @@ the merged report.
 | --------------- | ------------------------------------ |
 |     < 5.0       |               >= 0.0.1               |
 |     >= 5.0      |               >= 0.0.2               |
-|     >= 6.0      |               >= 0.1.0               |
+|     >= 6.0      |               >= 0.2.0               |
 
 ## Sample
 Add the following config to your projects base build.gradle
@@ -114,11 +114,15 @@ $ ./gradlew clean createMergedPaidDebugReport
 
 # Releases
 
+## 0.2.0: Runs with Java8 build
+* I made a mistake in transitioning 0.1.0 to mavenCentral in that I rebuilt with Java 11 and didn't specify source/target compatibility. 0.2.0 re-enables Java 8 compatibility.
+
 ## 0.1.0: Better Gradle 6+ Support
-* It seems some gradle version/jacoco version combos were not picking up the .exec file output. This version changes to specify the output file on a per-test-task basis. 
+* It seems some gradle version/jacoco version combos were not picking up the .exec file output. This version changes to specify the output file on a per-test-task basis.
+* Note that when I transitioned from bintray to mavenCentral, I accidentally packaged for Java 11. You'll need to upgrade to 0.2.0 if you want your build script to run with a Java8 runtime. If your build already runs on Java 11+, then you're fine with this version.
 
 ## 0.0.3: Gradle 6+ Support
-* Gradle 6.0 backtracked on the way that you set `additionalSourceDirs` and `additionalClassDirs`, no longer allowing you to use the setters for them. Additioanlly, I had to change how execution files got added.
+* Gradle 6.0 backtracked on the way that you set `additionalSourceDirs` and `additionalClassDirs`, no longer allowing you to use the setters for them. Additionally, I had to change how execution files got added.
 
 ## 0.0.2: Gradle 5+ Support
 * Gradle 5.0 enforced that you use `additionalSourceDirs` and `additionalClassDirs` in an unfriendly way by throwing a `StackOverflowError` when you attempted to use the `sourceDirectories` and `classDirectories` setters.

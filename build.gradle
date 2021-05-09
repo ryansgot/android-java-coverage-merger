@@ -4,7 +4,7 @@ apply plugin: 'maven-publish'
 apply plugin: 'signing'
 
 group 'com.fsryan.gradle.coverage'
-version '0.1.0'
+version '0.2.0'
 
 repositories {
     mavenCentral()
@@ -15,6 +15,11 @@ dependencies {
     compile localGroovy()
 
     testCompile 'junit:junit:4.12'
+}
+
+java {
+    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_1_8
 }
 
 task sourcesJar(type: Jar) {
